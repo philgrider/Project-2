@@ -1,0 +1,18 @@
+<div class="container-fluid" id="items-container">
+       <div class="row justify-content-center" id="all-items">
+        {{#each items}}
+            <div class="card text-center col-lg-3 col-md-4 col-6 mb-4 item-card p-0">
+                <img class="card-img-top" src="{{image}}" alt="{{name}}">
+                <div class="card-body">
+                    <h5 class="card-title">{{name}}</h5>
+                    <p class="card-text">{{description}}</p>
+                    <p class="card-text">{{price}}</p>
+                </div>
+                
+                <div class="card-footer">
+                    <a href="#"><button class="btn btn-primary purchaseBtn" data-id="{{id}}">Purchase Item</button></a>
+                </div>
+            </div>
+        {{/each}}
+    </div>
+</div>

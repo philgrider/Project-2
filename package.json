@@ -11,10 +11,12 @@
   },
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^3.0.2",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "express-handlebars": "^3.0.0",
     "mysql2": "^1.5.3",
+    "node-gyp": "^3.8.0",
     "sequelize": "^4.38.0"
   },
   "devDependencies": {

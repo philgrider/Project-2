@@ -1,99 +1,104 @@
-// Get references to page elements
-var $exampleText = $("#example-text");
-var $exampleDescription = $("#example-description");
-var $submitBtn = $("#submit");
-var $exampleList = $("#example-list");
+//New user form
+$(function() {
+  //Creating a new User
+  $("#create-form").on("submit", function(event) {
+    // Make sure to preventDefault on a submit event.
+    event.preventDefault();
 
-// The API object contains methods for each kind of request we'll make
-var API = {
-  saveExample: function(example) {
-    return $.ajax({
-      headers: {
-        "Content-Type": "application/json"
-      },
+    //created variable to save the input from form
+    var newUser = {
+      firstName: $("#firstName")
+        .val()
+        .trim(),
+      lastName: $("#lastName")
+        .val()
+        .trim(),
+      email: $("#email")
+        .val()
+        .trim(),
+      password: $("#password")
+        .val()
+        .trim()
+    };
+
+    // Send the POST request
+    $.ajax("/api/user", {
       type: "POST",
-      url: "api/examples",
-      data: JSON.stringify(example)
+      data: newUser
+    }).then(function(data) {
+      //email unique violation
+      if (data.name === "SequelizeUniqueConstraintError") {
+        $("#Signup-Error-Modal").modal("show");
+      } else {
+        //store user id
+        sessionStorage.setItem("userID", parseInt(data.id));
+
+        // Reroute to search page
+        $("#create-form").val("");
+        window.location = "/search";
+      }
     });
-  },
-  getExamples: function() {
-    return $.ajax({
-      url: "api/examples",
-      type: "GET"
+  });
+});
+
+//Login Form
+$(function() {
+  //log in
+  $("#create-login-form").on("submit", function(event) {
+    // Make sure to preventDefault on a submit event.
+    event.preventDefault();
+
+    //created variable to save the input from form
+    var userLogin = {
+      email: $("#email")
+        .val()
+        .trim(),
+      password: $("#password")
+        .val()
+        .trim()
+    };
+
+    // Send the POST request to login
+    $.ajax("/api/login", {
+      type: "POST",
+      data: userLogin
+    }).then(function(data) {
+      if (data === "Incorrect Password") {
+        $("#InvalidPassword-Error-Modal").modal("show");
+      } else if (data === "No Account") {
+        $("#NoAccount-Error-Modal").modal("show");
+      } else {
+        //store user id
+        sessionStorage.setItem("userID", parseInt(data.id));
+
+        //redirect user
+        window.location = "/search";
+      }
     });
-  },
-  deleteExample: function(id) {
-    return $.ajax({
-      url: "api/examples/" + id,
-      type: "DELETE"
-    });
+  });
+});
+
+$(document).ready(function() {
+  //Hides certain nav buttons if the user is logged in or has created an account
+  if (!sessionStorage.userID) {
+    $("#searchNav, #postNav").hide();
+  } else {
+    $("#loginNav").hide();
   }
-};
+});
 
-// refreshExamples gets new examples from the db and repopulates the list
-var refreshExamples = function() {
-  API.getExamples().then(function(data) {
-    var $examples = data.map(function(example) {
-      var $a = $("<a>")
-        .text(example.text)
-        .attr("href", "/example/" + example.id);
+$(document).ready(function() {
+  $("#all-items").on("click", ".purchaseBtn", function(event) {
+    // Make sure to preventDefault on a submit event.
+    event.preventDefault();
 
-      var $li = $("<li>")
-        .attr({
-          class: "list-group-item",
-          "data-id": example.id
-        })
-        .append($a);
-
-      var $button = $("<button>")
-        .addClass("btn btn-danger float-right delete")
-        .text("ｘ");
-
-      $li.append($button);
-
-      return $li;
+    var itemId = parseInt($(this).data("id"));
+    // Send the POST request to login
+    $.ajax("/api/item/" + itemId, {
+      type: "PUT"
+    }).then(function() {
+      //redirect user
+      window.location = "/search";
     });
-
-    $exampleList.empty();
-    $exampleList.append($examples);
   });
-};
-
-// handleFormSubmit is called whenever we submit a new example
-// Save the new example to the db and refresh the list
-var handleFormSubmit = function(event) {
-  event.preventDefault();
-
-  var example = {
-    text: $exampleText.val().trim(),
-    description: $exampleDescription.val().trim()
-  };
-
-  if (!(example.text && example.description)) {
-    alert("You must enter an example text and description!");
-    return;
-  }
-
-  API.saveExample(example).then(function() {
-    refreshExamples();
-  });
-
-  $exampleText.val("");
-  $exampleDescription.val("");
-};
-
-// handleDeleteBtnClick is called when an example's delete button is clicked
-// Remove the example from the db and refresh the list
-var handleDeleteBtnClick = function() {
-  var idToDelete = $(this)
-    .parent()
-    .attr("data-id");
-
-  API.deleteExample(idToDelete).then(function() {
-    refreshExamples();
-  });
-};
-
-// Add event listeners to the submit and delete buttons
-$submitBtn.on("click", handleFormSubmit);
-$exampleList.on("click", ".delete", handleDeleteBtnClick);
+});
